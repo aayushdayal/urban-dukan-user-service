@@ -1,0 +1,33 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using UrbanDukanUserService.Data;
+using UrbanDukanUserService.Interfaces;
+using UrbanDukanUserService.Models;
+
+namespace UrbanDukanUserService.Repositories
+{
+    public class EfUserRepository : IUserRepository
+    {
+        private readonly UserDbContext _db;
+
+        public EfUserRepository(UserDbContext db) => _db = db;
+
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            return await _db.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            return await _db.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task CreateAsync(User user)
+        {
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+        }
+    }
+}

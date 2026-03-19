@@ -6,10 +6,11 @@ using UrbanDukanUserService.Models;
 
 namespace UrbanDukanUserService.Repositories
 {
+    // Keep the old in-memory repository for tests/dev but mark as obsolete - registration now uses EF repository
     public class InMemoryUserRepository : IUserRepository
     {
         private readonly ConcurrentDictionary<string, User> _byEmail = new(StringComparer.OrdinalIgnoreCase);
-        private readonly ConcurrentDictionary<Guid, User> _byId = new();
+        private readonly ConcurrentDictionary<int, User> _byId = new();
 
         public Task<User?> GetByEmailAsync(string email)
         {
@@ -17,7 +18,7 @@ namespace UrbanDukanUserService.Repositories
             return Task.FromResult(user);
         }
 
-        public Task<User?> GetByIdAsync(Guid id)
+        public Task<User?> GetByIdAsync(int id)
         {
             _byId.TryGetValue(id, out var user);
             return Task.FromResult(user);

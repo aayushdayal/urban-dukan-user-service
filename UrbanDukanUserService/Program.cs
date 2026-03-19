@@ -1,10 +1,13 @@
 using System;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UrbanDukanUserService.Extensions;
 using UrbanDukanUserService.Settings;
+using UrbanDukanUserService.Data;
+using UrbanDukanUserService.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,6 +87,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var app = builder.Build();
+
+// Ensure database exists and seed roles
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    db.Database.Migrate();
+
+    // Seed roles if missing
+    var roles = new[] { "Admin", "Seller", "Buyer" };
+    foreach (var roleName in roles)
+    {
+        if (!db.Roles.Any(r => r.Name == roleName))
+        {
+            db.Roles.Add(new Role { Name = roleName });
+        }
+    }
+    db.SaveChanges();
+}
 
 // Pipeline
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
