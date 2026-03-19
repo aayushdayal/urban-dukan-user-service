@@ -91,12 +91,13 @@ var app = builder.Build();
 // Ensure database exists and seed roles
 using (var scope = app.Services.CreateScope())
 {
+    var logger1 = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        logger.LogInformation("Starting migration...");
+        logger1.LogInformation("Starting migration...");
         var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
         db.Database.Migrate();
-        logger.LogInformation("Migration successful.");
+        logger1.LogInformation("Migration successful.");
         // Seed roles if missing
         var roles = new[] { "Admin", "Seller", "Buyer" };
         foreach (var roleName in roles)
@@ -107,11 +108,11 @@ using (var scope = app.Services.CreateScope())
             }
         }
         db.SaveChanges();
-        logger.LogInformation("Role table seeding done.");
+        logger1.LogInformation("Role table seeding done.");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Migration failed");
+        logger1.LogError(ex, "Migration failed");
     }
     
 }
