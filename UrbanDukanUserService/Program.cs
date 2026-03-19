@@ -91,19 +91,29 @@ var app = builder.Build();
 // Ensure database exists and seed roles
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-    db.Database.Migrate();
-
-    // Seed roles if missing
-    var roles = new[] { "Admin", "Seller", "Buyer" };
-    foreach (var roleName in roles)
+    try
     {
-        if (!db.Roles.Any(r => r.Name == roleName))
+        logger.LogInformation("Starting migration...");
+        var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+        db.Database.Migrate();
+        logger.LogInformation("Migration successful.");
+        // Seed roles if missing
+        var roles = new[] { "Admin", "Seller", "Buyer" };
+        foreach (var roleName in roles)
         {
-            db.Roles.Add(new Role { Name = roleName });
+            if (!db.Roles.Any(r => r.Name == roleName))
+            {
+                db.Roles.Add(new Role { Name = roleName });
+            }
         }
+        db.SaveChanges();
+        logger.LogInformation("Role table seeding done.");
     }
-    db.SaveChanges();
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Migration failed");
+    }
+    
 }
 
 // Pipeline
