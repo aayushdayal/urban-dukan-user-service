@@ -55,14 +55,9 @@ builder.Services.AddUrbanDukanUserService(builder.Configuration);
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
 var jwt = jwtSection.Get<JwtSettings>() ?? new JwtSettings();
 
-// Replace this line:
-// builder.Logging.CreateLogger("Startup").LogWarning("JwtSettings:Secret is empty. Configure a strong secret in production.");
-
-// With the following block:
 var loggerFactory = LoggerFactory.Create(logging =>
 {
     logging.AddConsole();
-    // Optionally add other providers as needed
 });
 var logger = loggerFactory.CreateLogger("Startup");
 logger.LogWarning("JwtSettings:Secret is empty. Configure a strong secret in production.");
@@ -88,33 +83,51 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// Ensure database exists and seed roles
+// Controlled migration + seeding (disabled by default).
+// Configure via appsettings or environment variables:
+//   ApplyMigrationsAtStartup = true|false
+//   SeedRolesAtStartup = true|false
+var config = app.Services.GetRequiredService<IConfiguration>();
+var applyMigrations = config.GetValue<bool>("ApplyMigrationsAtStartup", false);
+var seedRoles = config.GetValue<bool>("SeedRolesAtStartup", false);
+
 using (var scope = app.Services.CreateScope())
 {
     var logger1 = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        logger1.LogInformation("Starting migration...");
         var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-        db.Database.Migrate();
-        logger1.LogInformation("Migration successful.");
-        // Seed roles if missing
-        var roles = new[] { "Admin", "Seller", "Buyer" };
-        foreach (var roleName in roles)
+
+        if (applyMigrations)
         {
-            if (!db.Roles.Any(r => r.Name == roleName))
-            {
-                db.Roles.Add(new Role { Name = roleName });
-            }
+            logger1.LogInformation("Applying EF Core migrations at startup...");
+            db.Database.Migrate();
+            logger1.LogInformation("Migrations applied.");
         }
-        db.SaveChanges();
-        logger1.LogInformation("Role table seeding done.");
+        else
+        {
+            logger1.LogInformation("ApplyMigrationsAtStartup is false; skipping migrations at startup.");
+        }
+
+        if (seedRoles)
+        {
+            logger1.LogInformation("Seeding role data (SeedRolesAtStartup=true)...");
+            var roles = new[] { "Admin", "Seller", "Buyer" };
+            foreach (var roleName in roles)
+            {
+                if (!db.Roles.Any(r => r.Name == roleName))
+                {
+                    db.Roles.Add(new Role { Name = roleName });
+                }
+            }
+            db.SaveChanges();
+            logger1.LogInformation("Role seeding complete.");
+        }
     }
     catch (Exception ex)
     {
-        logger1.LogError(ex, "Migration failed");
+        logger1.LogError(ex, "Startup migration/seeding failed.");
     }
-    
 }
 
 // Pipeline
@@ -124,7 +137,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "UrbanDukan User Service v1");
-        // Serve the Swagger UI at the app's root (change or remove RoutePrefix if you prefer /swagger)
         c.RoutePrefix = string.Empty;
     });
 }
