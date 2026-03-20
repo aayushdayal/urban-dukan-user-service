@@ -33,7 +33,8 @@ jobs:
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
         
       - name: Run EF Core Migrations
-        run: dotnet ef database update --project ./UrbanDukanUserService.csproj --startup-project ./UrbanDukanUserService.csproj
+        working-directory: ./UrbanDukanUserService
+        run: dotnet ef database update
         env:
           ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION }}
 
