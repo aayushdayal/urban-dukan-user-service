@@ -87,47 +87,41 @@ var app = builder.Build();
 // Configure via appsettings or environment variables:
 //   ApplyMigrationsAtStartup = true|false
 //   SeedRolesAtStartup = true|false
-var config = app.Services.GetRequiredService<IConfiguration>();
-var applyMigrations = config.GetValue<bool>("ApplyMigrationsAtStartup", false);
-var seedRoles = config.GetValue<bool>("SeedRolesAtStartup", false);
+//var config = app.Services.GetRequiredService<IConfiguration>();
+//var applyMigrations = config.GetValue<bool>("ApplyMigrationsAtStartup", false);
+//var seedRoles = config.GetValue<bool>("SeedRolesAtStartup", false);
 
 using (var scope = app.Services.CreateScope())
 {
-    var logger1 = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    try
-    {
+    
         var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
 
-        if (applyMigrations)
-        {
-            logger1.LogInformation("Applying EF Core migrations at startup...");
-            db.Database.Migrate();
-            logger1.LogInformation("Migrations applied.");
-        }
-        else
-        {
-            logger1.LogInformation("ApplyMigrationsAtStartup is false; skipping migrations at startup.");
-        }
+        //if (applyMigrations)
+        //{
+        //    logger1.LogInformation("Applying EF Core migrations at startup...");
+        //    db.Database.Migrate();
+        //    logger1.LogInformation("Migrations applied.");
+        //}
+        //else
+        //{
+        //    logger1.LogInformation("ApplyMigrationsAtStartup is false; skipping migrations at startup.");
+        //}
 
-        if (seedRoles)
-        {
-            logger1.LogInformation("Seeding role data (SeedRolesAtStartup=true)...");
-            var roles = new[] { "Admin", "Seller", "Buyer" };
-            foreach (var roleName in roles)
-            {
-                if (!db.Roles.Any(r => r.Name == roleName))
-                {
-                    db.Roles.Add(new Role { Name = roleName });
-                }
-            }
-            db.SaveChanges();
-            logger1.LogInformation("Role seeding complete.");
-        }
-    }
-    catch (Exception ex)
-    {
-        logger1.LogError(ex, "Startup migration/seeding failed.");
-    }
+        //if (seedRoles)
+        //{
+        //    logger1.LogInformation("Seeding role data (SeedRolesAtStartup=true)...");
+        //    var roles = new[] { "Admin", "Seller", "Buyer" };
+        //    foreach (var roleName in roles)
+        //    {
+        //        if (!db.Roles.Any(r => r.Name == roleName))
+        //        {
+        //            db.Roles.Add(new Role { Name = roleName });
+        //        }
+        //    }
+        //    db.SaveChanges();
+        //    logger1.LogInformation("Role seeding complete.");
+        //}
+    
 }
 
 // Pipeline
