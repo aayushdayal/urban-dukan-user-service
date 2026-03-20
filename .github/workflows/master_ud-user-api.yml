@@ -34,9 +34,7 @@ jobs:
         
       - name: Run EF Core Migrations
         working-directory: ./UrbanDukanUserService
-        run: dotnet ef database update
-        env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION }}
+        run: dotnet ef database update --connection "${{ secrets.DB_CONNECTION }}"
 
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
