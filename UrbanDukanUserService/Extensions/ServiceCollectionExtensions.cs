@@ -19,12 +19,12 @@ namespace UrbanDukanUserService.Extensions
             var conn = configuration.GetConnectionString("DefaultConnection");
             if (!string.IsNullOrWhiteSpace(conn))
             {
-                throw new Exception("Connection string not configured!");
-                // services.AddDbContext<UserDbContext>(opt => opt.UseSqlServer(conn));
+                 services.AddDbContext<UserDbContext>(opt => opt.UseSqlServer(conn));
             }
             else
             {
                 // In-memory SQLite helps with dev/testing without extra setup. Schema can be migrated later.
+                throw new Exception("Connection string not configured!");
                 services.AddDbContext<UserDbContext>(opt => opt.UseSqlite("Data Source=UserDb.sqlite"));
             }
 
