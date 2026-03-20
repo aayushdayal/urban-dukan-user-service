@@ -24,7 +24,7 @@ namespace UrbanDukanUserService.Data
             user.Property(u => u.FirstName);
             user.Property(u => u.LastName);
             user.Property(u => u.IsActive).HasDefaultValue(true);
-            user.Property(u => u.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            user.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE");
             user.Property(u => u.UpdatedAt);
             user.Property(u => u.Address);
             user.Property(u => u.Phone);
