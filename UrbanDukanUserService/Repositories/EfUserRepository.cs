@@ -29,5 +29,14 @@ namespace UrbanDukanUserService.Repositories
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
         }
+
+        public async Task<Role?> GetRoleByNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return null;
+
+            var normalized = name.Trim().ToLowerInvariant();
+            return await _db.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == normalized);
+        }
     }
 }

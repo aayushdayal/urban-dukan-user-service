@@ -38,8 +38,20 @@ namespace UrbanDukanUserService.Services
             {
                 Email = request.Email,
                 PasswordHash = PasswordHasher.Hash(request.Password),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Address = request.Address,
+                Phone = request.Phone
             };
+
+            // Role assignment: use provided role or default to "Buyer"
+            var desiredRoleName = string.IsNullOrWhiteSpace(request.Role) ? "Buyer" : request.Role.Trim();
+            var role = await _repo.GetRoleByNameAsync(desiredRoleName);
+            if (role is null)
+                throw new ArgumentException($"Role '{desiredRoleName}' does not exist.");
+
+            user.Roles.Add(role);
 
             await _repo.CreateAsync(user);
 

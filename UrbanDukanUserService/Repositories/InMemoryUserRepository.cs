@@ -11,6 +11,18 @@ namespace UrbanDukanUserService.Repositories
     {
         private readonly ConcurrentDictionary<string, User> _byEmail = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<int, User> _byId = new();
+        private readonly ConcurrentDictionary<string, Role> _roles = new(StringComparer.OrdinalIgnoreCase);
+
+        public InMemoryUserRepository()
+        {
+            // seed some roles so tests/dev have them available
+            var admin = new Role { Id = 1, Name = "Admin" };
+            var seller = new Role { Id = 2, Name = "Seller" };
+            var buyer = new Role { Id = 3, Name = "Buyer" };
+            _roles[admin.Name] = admin;
+            _roles[seller.Name] = seller;
+            _roles[buyer.Name] = buyer;
+        }
 
         public Task<User?> GetByEmailAsync(string email)
         {
@@ -31,6 +43,15 @@ namespace UrbanDukanUserService.Repositories
 
             _byId[user.Id] = user;
             return Task.CompletedTask;
+        }
+
+        public Task<Role?> GetRoleByNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return Task.FromResult<Role?>(null);
+
+            _roles.TryGetValue(name.Trim(), out var role);
+            return Task.FromResult(role);
         }
     }
 }
