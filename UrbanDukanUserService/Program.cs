@@ -4,12 +4,20 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.AzureAppServices;
 using UrbanDukanUserService.Extensions;
 using UrbanDukanUserService.Settings;
 using UrbanDukanUserService.Data;
 using UrbanDukanUserService.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure logging (console + debug + Azure App Service diagnostics)
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.AddAzureWebAppDiagnostics();
 
 // Configuration and services
 builder.Services.AddControllers();
@@ -55,13 +63,6 @@ builder.Services.AddUrbanDukanUserService(builder.Configuration);
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
 var jwt = jwtSection.Get<JwtSettings>() ?? new JwtSettings();
 
-var loggerFactory = LoggerFactory.Create(logging =>
-{
-    logging.AddConsole();
-});
-var logger = loggerFactory.CreateLogger("Startup");
-logger.LogWarning("JwtSettings:Secret is empty. Configure a strong secret in production.");
-
 // Configure JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -83,6 +84,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
+// log Jwt configuration after DI/logging is available
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+if (string.IsNullOrWhiteSpace(jwt.Secret) || jwt.Secret == "replace-with-a-strong-secret")
+{
+    logger.LogWarning("JwtSettings:Secret is empty or using the placeholder. Configure a strong secret in production.");
+}
+else
+{
+    logger.LogInformation("JwtSettings loaded.");
+}
+
 // Controlled migration + seeding (disabled by default).
 // Configure via appsettings or environment variables:
 //   ApplyMigrationsAtStartup = true|false
@@ -93,35 +105,9 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    
-        var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
 
-        //if (applyMigrations)
-        //{
-        //    logger1.LogInformation("Applying EF Core migrations at startup...");
-        //    db.Database.Migrate();
-        //    logger1.LogInformation("Migrations applied.");
-        //}
-        //else
-        //{
-        //    logger1.LogInformation("ApplyMigrationsAtStartup is false; skipping migrations at startup.");
-        //}
-
-        //if (seedRoles)
-        //{
-        //    logger1.LogInformation("Seeding role data (SeedRolesAtStartup=true)...");
-        //    var roles = new[] { "Admin", "Seller", "Buyer" };
-        //    foreach (var roleName in roles)
-        //    {
-        //        if (!db.Roles.Any(r => r.Name == roleName))
-        //        {
-        //            db.Roles.Add(new Role { Name = roleName });
-        //        }
-        //    }
-        //    db.SaveChanges();
-        //    logger1.LogInformation("Role seeding complete.");
-        //}
-    
+    // migration / seeding code (commented)...
 }
 
 // Pipeline
