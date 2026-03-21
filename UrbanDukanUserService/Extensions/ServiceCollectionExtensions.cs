@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using UrbanDukanUserService.Data;
 using UrbanDukanUserService.Interfaces;
 using UrbanDukanUserService.Repositories;
@@ -19,7 +20,16 @@ namespace UrbanDukanUserService.Extensions
             var conn = configuration.GetConnectionString("DefaultConnection");
             if (!string.IsNullOrWhiteSpace(conn))
             {
-                 services.AddDbContext<UserDbContext>(opt => opt.UseSqlServer(conn));
+                 services.AddDbContext<UserDbContext>(options =>
+                 options.UseSqlServer(conn, sqlOptions =>
+                 {
+                     sqlOptions.EnableRetryOnFailure(
+                         maxRetryCount: 5,
+                         maxRetryDelay: TimeSpan.FromSeconds(10),
+                         errorNumbersToAdd: null
+                     );
+                 }
+                 ));
             }
             else
             {
