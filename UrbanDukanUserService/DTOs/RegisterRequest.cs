@@ -7,7 +7,7 @@ namespace UrbanDukanUserService.DTOs
         [Required, EmailAddress]
         public string Email { get; set; } = null!;
 
-        [Required, MinLength(8)]
+        [Required, MinLength(6)]
         public string Password { get; set; } = null!;
 
         [MaxLength(100)]

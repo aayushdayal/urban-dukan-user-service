@@ -95,8 +95,8 @@ namespace UrbanDukanUserService.Services
 
         private static void ValidatePasswordStrength(string password)
         {
-            if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
-                throw new ArgumentException("Password must be at least 8 characters.");
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
+                throw new ArgumentException("Password must be at least 6 characters.");
 
             var hasUpper = false;
             var hasLower = false;

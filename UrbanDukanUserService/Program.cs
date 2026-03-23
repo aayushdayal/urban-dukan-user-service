@@ -23,6 +23,19 @@ builder.Logging.AddAzureWebAppDiagnostics();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+var allowedOrigins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DefaultCorsPolicy", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+           //   .AllowCredentials(); // remove if you don't send credentials (cookies)
+    });
+});
+
 // Swagger with JWT (Bearer) support so you can use the Authorize button in UI
 builder.Services.AddSwaggerGen(options =>
 {
@@ -122,6 +135,9 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 app.UseHttpsRedirection();
+
+// enable CORS before authentication and endpoints
+app.UseCors("DefaultCorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
