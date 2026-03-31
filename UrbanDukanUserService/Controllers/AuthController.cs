@@ -44,6 +44,14 @@ namespace UrbanDukanUserService.Controllers
             try
             {
                 var result = await _users.LoginAsync(request);
+                //Response.Cookies.Append("auth_token", result.Token, new CookieOptions
+                //{
+                //    HttpOnly = true,
+                //    Secure = true,
+                //    SameSite = SameSiteMode.None, // required for cross-origin
+                //    Expires = result.ExpiresAt
+                //});
+
                 return Ok(result);
             }
             catch (UnauthorizedAccessException)
