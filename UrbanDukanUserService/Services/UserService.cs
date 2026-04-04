@@ -107,6 +107,35 @@ namespace UrbanDukanUserService.Services
             };
         }
 
+        public async Task<UserDetailsResponse?> UpdateUserAsync(int userId, UpdateUserRequest request)
+        {
+            var user = await _repo.GetByIdAsync(userId);
+            if (user is null) return null;
+
+            // Update allowed profile fields
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.Address = request.Address;
+            user.Phone = request.Phone;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _repo.UpdateAsync(user);
+
+            return new UserDetailsResponse
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Address = user.Address,
+                Phone = user.Phone,
+                IsActive = user.IsActive,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
+                Roles = user.Roles?.Select(r => r.Name).ToArray() ?? Array.Empty<string>()
+            };
+        }
+
         private static void ValidateEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -141,11 +170,11 @@ namespace UrbanDukanUserService.Services
             var expires = DateTime.UtcNow.AddMinutes(_jwt.ExpirationMinutes);
 
             var claims = new List<Claim>
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString() ?? string.Empty),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
+                    {
+                        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString() ?? string.Empty),
+                        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    };
 
             var token = new JwtSecurityToken(
                 issuer: _jwt.Issuer,

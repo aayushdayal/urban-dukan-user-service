@@ -10,5 +10,8 @@ namespace UrbanDukanUserService.Interfaces
 
         // Get details for a specific user id (returns null if not found)
         Task<UserDetailsResponse?> GetUserDetailsAsync(int userId);
+
+        // Update profile fields for a user (returns null if user not found)
+        Task<UserDetailsResponse?> UpdateUserAsync(int userId, UpdateUserRequest request);
     }
 }

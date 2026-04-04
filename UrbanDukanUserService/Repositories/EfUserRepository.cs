@@ -38,5 +38,12 @@ namespace UrbanDukanUserService.Repositories
             var normalized = name.Trim().ToLowerInvariant();
             return await _db.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == normalized);
         }
+
+        public async Task UpdateAsync(User user)
+        {
+            // User is normally tracked when retrieved via GetByIdAsync; Update ensures changes are persisted.
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
+        }
     }
 }

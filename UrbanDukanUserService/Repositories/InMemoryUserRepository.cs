@@ -53,5 +53,13 @@ namespace UrbanDukanUserService.Repositories
             _roles.TryGetValue(name.Trim(), out var role);
             return Task.FromResult(role);
         }
+
+        public Task UpdateAsync(User user)
+        {
+            // Replace stored references for in-memory repo
+            _byEmail[user.Email] = user;
+            _byId[user.Id] = user;
+            return Task.CompletedTask;
+        }
     }
 }

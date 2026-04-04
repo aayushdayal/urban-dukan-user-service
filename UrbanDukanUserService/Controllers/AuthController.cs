@@ -81,5 +81,28 @@ namespace UrbanDukanUserService.Controllers
 
             return Ok(details);
         }
+
+        // PUT: api/auth/userdetails
+        // Update the currently authenticated user's profile fields
+        [HttpPut("userdetails")]
+        [Authorize]
+        public async Task<IActionResult> Update([FromBody] UpdateUserRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var sub = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                      ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value
+                      ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrWhiteSpace(sub) || !int.TryParse(sub, out var userId))
+                return Unauthorized();
+
+            var updated = await _users.UpdateUserAsync(userId, request);
+            if (updated is null)
+                return NotFound(new { error = "User not found." });
+
+            return Ok(updated);
+        }
     }
 }

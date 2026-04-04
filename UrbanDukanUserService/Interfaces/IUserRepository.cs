@@ -12,5 +12,8 @@ namespace UrbanDukanUserService.Interfaces
 
         // New: resolve a Role by name (case-insensitive)
         Task<Role?> GetRoleByNameAsync(string name);
+
+        // Persist updates to an existing user
+        Task UpdateAsync(User user);
     }
 }
