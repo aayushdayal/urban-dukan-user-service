@@ -7,5 +7,8 @@ namespace UrbanDukanUserService.Interfaces
     {
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
         Task<AuthResponse> LoginAsync(LoginRequest request);
+
+        // Get details for a specific user id (returns null if not found)
+        Task<UserDetailsResponse?> GetUserDetailsAsync(int userId);
     }
 }
